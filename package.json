@@ -1,0 +1,35 @@
+{
+  "name": "kharon_server",
+  "version": "1.0.0",
+  "description": "Server codebase for Kharon protocol",
+  "main": "server.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node src/server.js",
+    "watch": "nodemon src/server.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Kharon-labs/kharon-server.git"
+  },
+  "keywords": [
+    "Kharon",
+    "Blockchain",
+    "Web3",
+    "server",
+    "Ethereum",
+    "Starknet"
+  ],
+  "author": "Chinonso, Evans, Samuel",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/Kharon-labs/kharon-server/issues"
+  },
+  "homepage": "https://github.com/Kharon-labs/kharon-server#readme",
+  "dependencies": {
+    "express": "^4.19.2"
+  },
+  "devDependencies": {
+    "nodemon": "^3.1.4"
+  }
+}
