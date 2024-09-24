@@ -7,7 +7,7 @@ const sendEmail = require("../Utils/email/sendEmail.email");
 
 require("dotenv").config();
 
-const bcryptSaltRounds = process.env.BCRYPT_SALT || 10;
+const bcryptSaltRounds = parseInt(process.env.BCRYPT_SALT) || 10;
 const clientURL = process.env.CLIENT_URL;
 const JWTSecret = process.env.JWT_SECRET;
 const tokenExpiryTime = 15 * 60 * 1000; // 15 minutes for password reset token
@@ -15,7 +15,9 @@ const tokenExpiryTime = 15 * 60 * 1000; // 15 minutes for password reset token
 const signup = async (data) => {
   try {
     let user = await User.findOne({ email: data.email });
-    if (user) throw new Error("Email already exists");
+    if (user) {
+      return { status: 400, message: "Email already exists" };
+    }
 
     user = new User(data);
     const token = JWT.sign({ id: user._id }, JWTSecret, { expiresIn: "1h" });
@@ -27,14 +29,16 @@ const signup = async (data) => {
       token: token,
     };
   } catch (error) {
-    throw new Error(error.message);
+    return { status: 500, message: "Server error", error: error.message };
   }
 };
 
 const requestPasswordReset = async (email) => {
   try {
     const user = await User.findOne({ email });
-    if (!user) throw new Error("User does not exist");
+    if (!user) {
+      return { status: 400, message: "User does not exist"};
+    }
 
     let token = await Token.findOne({ userId: user._id });
     if (token) await token.deleteOne();
@@ -58,20 +62,24 @@ const requestPasswordReset = async (email) => {
     );
     return link;
   } catch (error) {
-    throw new Error(error.message);
+    return { status:400, message: "Server error", error: error.message };
   }
 };
 
 const resetPassword = async (userId, token, password) => {
   try {
     let passwordResetToken = await Token.findOne({ userId });
-    if (!passwordResetToken) throw new Error("Invalid or expired password reset token");
+    if (!passwordResetToken) {
+      return { status:400, message: "Invalid or expired password reset token" };
+    }
 
     const isValid = await bcrypt.compare(token, passwordResetToken.token);
-    if (!isValid) throw new Error("Invalid or expired password reset token");
+    if (!isValid) {
+      return { status: 400, message: "Invalid or expired password reset token" };
+    }
 
     if (Date.now() > passwordResetToken.expiresAt) {
-      throw new Error("Token has expired");
+      return { status:400, message: "Token has expired"};
     }
 
     const hash = await bcrypt.hash(password, bcryptSaltRounds);
@@ -91,7 +99,8 @@ const resetPassword = async (userId, token, password) => {
     await passwordResetToken.deleteOne();
     return true;
   } catch (error) {
-    throw new Error(error.message);
+    console.log("server error", error.message);
+    return { status:500, message: "Server error", error: error.message };
   }
 };
 

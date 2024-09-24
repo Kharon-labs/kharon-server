@@ -2,6 +2,7 @@ const testRouter = require("./Routes/test.route");
 const express = require("express");
 const helmet = require("helmet");
 const cors = require("cors");
+const path = require("path");
 require('dotenv').config();
 
 let clientUrl = process.env.CLIENT_URL || 'http://localhost:3000';
@@ -16,6 +17,7 @@ app.use(cors(corsOptions));
 
 app.use(express.json());
 
+app.use(express.static(path.join(__dirname, "public")));
 app.use("/api/v1", require("./Routes/auth.route"));
 app.use("/route", testRouter);
 
