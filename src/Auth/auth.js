@@ -17,14 +17,12 @@ const AUTH_OPTIONS = {
 async function verifyCallback(accessToken, refreshToken, profile, done) {
   console.log(profile);
   const email = profile.emails[0].value;
-  const userId = profile.id;
   try {
     let user = await OAuthUser.findOne({ email });
 
     if (!user) {
       user = new OAuthUser({
         email,
-        userId,
       });
 
       await user.save();
@@ -32,8 +30,8 @@ async function verifyCallback(accessToken, refreshToken, profile, done) {
 
     done(null, user);
   } catch (err) {
-    return { status: 500, message: err.message };
     done(err, null);
+    return { status: 500, message: err.message };
   }
 }
 
@@ -44,10 +42,10 @@ passport.serializeUser((user, done) => {
   done(null, user._id);
 });
 
-passport.deserializeUser(async (id, done) => {
-    console.log("Deserialized user ID:", id); 
+passport.deserializeUser(async (_id, done) => {
+    console.log("Deserialized user ID:", _id); 
   try {
-    const user = await OAuthUser.findById({ id });
+    const user = await OAuthUser.findById({ _id });
     done(null, user);
   } catch (err) {
     done(err, null);

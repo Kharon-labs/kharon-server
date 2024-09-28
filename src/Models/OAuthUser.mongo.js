@@ -8,11 +8,6 @@ const OAuthUserSchema = mongoose.Schema(
       required: true,
       trim: true,
     },
-    userId: {
-      type: String,
-      unique: true,
-      required: true,
-    },
   },
   {
     timestamps: true,

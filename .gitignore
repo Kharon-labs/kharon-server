@@ -3,3 +3,5 @@
 package-lock.json
 package-lock
 yarn.lock
+cert.pem
+key.pem
