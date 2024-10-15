@@ -1,4 +1,3 @@
-const testRouter = require("./Routes/test.route");
 const express = require("express");
 const helmet = require("helmet");
 const cors = require("cors");
@@ -19,7 +18,7 @@ app.use(express.json());
 
 app.use(express.static(path.join(__dirname, "public")));
 app.use("/api/v1", require("./Routes/auth.route"));
-app.use("/route", testRouter);
+app.use("/api/v1", require("./Auth/routes.auth"));
 
 app.use((error, req, res, next) => {
     const statusCode = error.status || 500;

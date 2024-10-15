@@ -38,12 +38,10 @@ async function verifyCallback(accessToken, refreshToken, profile, done) {
 passport.use(new Strategy(AUTH_OPTIONS, verifyCallback));
 
 passport.serializeUser((user, done) => {
-    console.log("Serialized user ID:", user._id);
   done(null, user._id);
 });
 
 passport.deserializeUser(async (_id, done) => {
-    console.log("Deserialized user ID:", _id); 
   try {
     const user = await OAuthUser.findById({ _id });
     done(null, user);
