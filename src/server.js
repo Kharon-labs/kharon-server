@@ -6,7 +6,6 @@ const express = require("express");
 const passport = require("passport");
 const session = require('express-session');
 const MongoStore = require('connect-mongo');
-const serverless = require('serverless-http');
 const authRoutes = require("./Routes/routes.route");
 const { mongoConnect } = require("./Services/mongo");
 
@@ -70,4 +69,4 @@ async function startServer() {
 
 startServer();
 
-export const handler = serverless(app);
+module.exports = app;
