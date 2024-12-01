@@ -9,7 +9,7 @@ const config = {
 };
 
 const AUTH_OPTIONS = {
-  callbackURL: "/auth/google/callback",
+  callbackURL: "/user/auth/google/callback",
   clientID: config.CLIENT_ID,
   clientSecret: config.CLIENT_SECRET,
 };
