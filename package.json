@@ -6,8 +6,7 @@
   "scripts": {
     "test": "jest --detectOpenHandles",
     "start": "node src/server.js",
-    "watch": "nodemon src/server.js",
-    "build": "netlify deploy --prod"
+    "watch": "nodemon src/server.js"
   },
   "repository": {
     "type": "git",
@@ -30,7 +29,6 @@
     "testEnvironment": "node"
   },
   "dependencies": {
-    "@netlify/functions": "^2.8.2",
     "@types/express": "^5.0.0",
     "bcrypt": "^5.1.1",
     "connect-mongo": "^5.1.0",
@@ -53,8 +51,7 @@
     "passport": "^0.7.0",
     "passport-google-oauth20": "^2.0.0",
     "passport-local": "^1.0.0",
-    "password-validator": "^5.3.0",
-    "serverless-http": "^3.2.0"
+    "password-validator": "^5.3.0"
   },
   "devDependencies": {
     "jest": "^29.7.0",
