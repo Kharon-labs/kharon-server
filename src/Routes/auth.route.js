@@ -9,9 +9,9 @@ const {
 const router = require("express").Router();
 
 // router.post("/auth/login", loginController);
-router.post("/auth/verifyOTP", verifyOTPController);
-router.post("/auth/signup", signUpController);
-router.post("/auth/resetPassword", resetPasswordController);
-router.post("/auth/requestResetPassword", resetPasswordRequestController);
+router.post("/verifyOTP", verifyOTPController);
+router.post("/signup", signUpController);
+router.post("/resetPassword", resetPasswordController);
+router.post("/requestResetPassword", resetPasswordRequestController);
 
 module.exports = router;

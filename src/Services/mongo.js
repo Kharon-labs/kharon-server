@@ -1,4 +1,5 @@
 const mongoose = require("mongoose");
+require('dotenv').config();
 
 const MONGO_URL = process.env.MONGO_DB_URL;
 
@@ -12,7 +13,10 @@ mongoose.connection.once("open", () => {
 
   
 async function mongoConnect() {
-    await mongoose.connect(MONGO_URL);
+    await mongoose.connect(MONGO_URL, {
+      serverSelectionTimeoutMS: 30000,
+      connectTimeoutMS: 30000,
+    });
 }
 
 async function mongoDisconnect() {

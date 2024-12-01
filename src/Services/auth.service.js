@@ -6,7 +6,7 @@ const Token = require("../Models/token.mongo");
 const validator = require("email-validator"); // for email validation
 const passwordValidator = require("password-validator");
 const sendEmail = require("../Utils/email/sendEmail.email");
-const { sendOTP } = require("../Controllers/sendOTP.controller");
+// const { sendOTP } = require("../Controllers/sendOTP.controller");
 
 require("dotenv").config();
 
@@ -35,208 +35,187 @@ schema
   .not()
   .oneOf(["password", "Password", "password123", "Password123"]);
 
-const login = async (email, password, req, res) => {
-  try {
-    // validate email
-    const isValid = validator.validate(email);
-    if (!isValid) {
+  const signup = async (req) => {
+    const { email, password, password2 } = req.body;
+    try {
+      const validatedEmail = validator.validate(email);
+      if (!validatedEmail) {
+        return { status: 400, message: "Invalid email, please try again or signup" };
+      }
+  
+      if (password !== password2) {
+        return { status: 400, message: "Passwords do not match" };
+      }
+  
+      const validatedPassword = schema.validate(password);
+      if (!validatedPassword) {
+        return { status: 400, message: "Invalid password, please try again" };
+      }
+  
+      const existingUser = await User.findOne({ email });
+      if (existingUser) {
+        return { status: 400, message: "Email is already registered" };
+      }
+  
+      const user = new User({
+        email,
+        password,
+        twoFAEnabled: false,
+        createdAt: Date.now(),
+      });
+  
+      await user.save();
+  
+      const token = JWT.sign({ id: user._id }, JWTSecret, { expiresIn: "1h" });
+  
+      await new Token({
+        userId: user._id,
+        token,
+      }).save();
+  
+      return {
+        status: 201,
+        message: "User created successfully",
+        userId: user._id.toString(),
+        email: user.email,
+      };
+    } catch (error) {
+      console.error("Signup error:", error.message);
+      return { status: 500, message: "Server error", error: error.message };
+    }
+  };
+  
+  
+  
+  const requestPasswordReset = async (email) => {
+    if (!validator.validate(email)) {
       return {
         status: 400,
         message: "Invalid email, please try again or signup",
       };
     }
-
-    //validate password
-    let validatedPassword = schema.validate(password);
-    if (!validatedPassword) {
-      return { status: 400, message: "Invalid password, please try again" };
+  
+    try {
+      const user = await User.findOne({ email });
+      if (!user) {
+        return { status: 400, message: "User does not exist" };
+      }
+  
+      // Remove existing token if any
+      let token = await Token.findOne({ userId: user._id });
+      if (token) await token.deleteOne();
+  
+      // Generate reset token
+      let resetToken = crypto.randomBytes(32).toString("hex");
+      console.log("Generated reset token:", resetToken);
+      const hash = await bcrypt.hash(resetToken, bcryptSaltRounds);
+      console.log("Generated reset token hash:", hash);
+  
+      // Save the token
+      await new Token({
+        userId: user._id,
+        token: hash,
+        createdAt: Date.now(),
+        expiresAt: Date.now() + tokenExpiryTime,
+      }).save();
+  
+      const link = `${clientURL}/api/v1/auth/resetPassword?token=${resetToken}&id=${user._id}`;
+      console.log("Password reset link:", link);
+      await sendEmail(
+        user.email,
+        "Password Reset Request",
+        { link },
+        "requestResetPassword.handlebars",
+      );
+  
+      return { status: 200, message: "Password reset link sent", link };
+    } catch (error) {
+      console.error("Password reset request error:", error.message);
+      return {
+        status: 500,
+        message: "Server error",
+        error: error.message,
+      };
     }
+  };
+  
 
-    let user = await User.findOne({ email });
-    if (!user) {
-      return { status: 400, message: "User not registered" };
-    }
-
-    // compare password using bcrypt
-    const isValidPassword = await bcrypt.compare(password, user.password);
-
-    if (!isValidPassword) {
-      return { status: 400, message: "Incorrect password, please try again" };
-    }
-
-    // generate a new token and encrypt
-    let token = crypto.randomBytes(32).toString("hex");
-    const tokenHash = await bcrypt.hash(token, bcryptSaltRounds);
-
-    await new Token({
-      userId: user._id,
-      token: tokenHash,
-      createdAt: Date.now(),
-      expiresAt: Date.now() + tokenExpiryTime,
-    }).save();
-
-    // send OTP
-    await sendOTP(req, res, email);
-
-    return { status: 200, user };
-    
-  } catch (err) {
-    console.log(err);
-    return { status: 500, message: "Login failed, please try again" };
-  }
-};
-
-const signup = async (req, res) => {
-  const { email, password } = req.body;
-  try {
-    // validate email
-    let validatedEmail = validator.validate(email);
-    if (!validatedEmail) {
+  const resetPassword = async (req, res) => {
+    const { email, password, password2, token, userId } = req.body;
+    console.log("reset pwd token", token);
+    if (!validator.validate(email)) {
       return {
         status: 400,
-        message: "Invalid email, please try again or signup",
+        message: "Invalid email, please try again",
       };
     }
 
-    // validate password
-    let validatedPassword = schema.validate(password);
-    if (!validatedPassword) {
-      return { status: 400, message: "Invalid password, please try again" };
+    if (password !== password2) {
+      return { status: 400, message: "Passwords do not match" };
     }
-
-    //check if user is already registered
-    let user = await User.findOne({ email });
-    if (user) {
-      return { status: 400, message: "Email already exists" };
-    }
-
-    user = new User({
-      email,
-      password,
-    });
-
-    const token = JWT.sign({ id: user._id }, JWTSecret, { expiresIn: "1h" });
-    await user.save();
-
-    //send confirmation email
-
-    new Token({
-      userId: user.id,
-      token,
-    }).save();
-
-    return {
-      userId: user._id,
-      email: user.email,
-      token: token,
-    };
-  } catch (error) {
-    return { status: 500, message: "Server error", error: error.message };
-  }
-};
-
-const requestPasswordReset = async (email) => {
-  // validate email
-  let validatedEmail = await validate(email);
-  if (!validatedEmail.valid) {
-    return {
-      status: 400,
-      message: "Invalid email, please try again or signup",
-    };
-  }
-
-  try {
-    const user = await User.findOne({ email });
-    if (!user) {
-      return { status: 400, message: "User does not exist" };
-    }
-
-    let token = await Token.findOne({ userId: user._id });
-    if (token) await token.deleteOne();
-
-    let resetToken = crypto.randomBytes(32).toString("hex");
-    const hash = await bcrypt.hash(resetToken, bcryptSaltRounds);
-
-    await new Token({
-      userId: user._id,
-      token: hash,
-      createdAt: Date.now(),
-      expiresAt: Date.now() + tokenExpiryTime,
-    }).save();
-
-    const link = `${clientURL}/passwordReset?token=${resetToken}&id=${user._id}`;
-    sendEmail(
-      user.email,
-      "Password Reset Request",
-      { link: link },
-      "../Utils/email/templates/requestResetPassword.handlebars"
-    );
-    return link;
-  } catch (error) {
-    return { status: 400, message: "Server error", error: error.message };
-  }
-};
-
-const resetPassword = async (token, email, password) => {
-  // validate email
-  let validatedEmail = await validate(email);
-  if (!validatedEmail.valid) {
-    return {
-      status: 400,
-      message: "Invalid email, please try again",
-    };
-  }
-
-  // validate password
-  let validatedPassword = schema.validate(password);
-  if (!validatedPassword) {
-    return { status: 400, message: "Invalid password, please try again" };
-  }
-  try {
-    let passwordResetToken = await Token.findOne({ email });
-    if (!passwordResetToken) {
+  
+    if (!schema.validate(password)) {
       return {
         status: 400,
-        message: "Invalid or expired password reset token",
+        message: "Invalid password, please try again",
       };
     }
+  
+    try {
+      const user = await User.findOne({ email });
+      if (!user) {
+        return { status: 404, message: "User not found" };
+      }
 
-    const isValid = await bcrypt.compare(token, passwordResetToken.token);
-    if (!isValid) {
+  
+      const passwordResetToken = await Token.findOne({ userId: userId });
+      console.log("token 2", passwordResetToken.token);
+      if (!passwordResetToken) {
+        return {
+          status: 400,
+          message: "Password reset token not found",
+        };
+      }
+  
+      // Validate token and expiration
+      const isValid = await bcrypt.compare(token, passwordResetToken.token);
+      console.log("is valid token?", isValid);
+      if (!isValid || Date.now() > passwordResetToken.expiresAt) {
+        return {
+          status: 400,
+          message: "Invalid or expired password reset token",
+        };
+      }
+  
+      // Hash new password and update
+      const hash = await bcrypt.hash(password, bcryptSaltRounds);
+      await User.updateOne({ _id: user._id }, { password: hash });
+  
+      // Send confirmation email
+      await sendEmail(
+        user.email,
+        "Password Reset Successful",
+        {},
+        "resetPassword.handlebars"
+      );
+  
+      // Delete the token
+      await passwordResetToken.deleteOne();
+  
+      return { status: 200, message: "Password reset successfully" };
+    } catch (error) {
+      console.error("Reset password error:", error.message);
       return {
-        status: 400,
-        message: "Invalid or expired password reset token",
+        status: 500,
+        message: "Server error",
+        error: error.message,
       };
     }
-
-    if (Date.now() > passwordResetToken.expiresAt) {
-      return { status: 400, message: "Token has expired" };
-    }
-
-    const hash = await bcrypt.hash(password, bcryptSaltRounds);
-    await User.updateOne(
-      { _id: user._id },
-      { $set: { password: hash } },
-      { new: true }
-    );
-
-    const user = await User.findOne({ email });
-    sendEmail(
-      user.email,
-      "Password Reset Successfully",
-      {},
-      "../Utils/email/templates/resetPassword.handlebars"
-    );
-    await passwordResetToken.deleteOne();
-    return true;
-  } catch (error) {
-    console.log("server error", error.message);
-    return { status: 500, message: "Server error", error: error.message };
-  }
-};
+  };
+  
 
 module.exports = {
-  login,
+  // login,
   signup,
   requestPasswordReset,
   resetPassword,

@@ -1,7 +1,7 @@
+const User = require('../Models/user.mongo');
 const { Strategy } = require("passport-google-oauth20");
-const OAuthUser = require("../Models/OAuthUser.mongo");
-const passport = require("passport");
 require("dotenv").config();
+
 
 const config = {
   CLIENT_ID: process.env.GOOGLE_CLIENT_ID,
@@ -14,40 +14,45 @@ const AUTH_OPTIONS = {
   clientSecret: config.CLIENT_SECRET,
 };
 
-async function verifyCallback(accessToken, refreshToken, profile, done) {
-  console.log(profile);
-  const email = profile.emails[0].value;
-  try {
-    let user = await OAuthUser.findOne({ email });
+module.exports = function (passport) {
+  
+  async function verifyCallback(accessToken, refreshToken, profile, done) {
+  
+    const email = profile.emails[0].value;
+    try {
+      let user = await User.findOne({ email });
 
-    if (!user) {
-      user = new OAuthUser({
-        email,
-      });
+      if (!user) {
+        user = new User({
+          email,
+          twoFAEnabled: true,
+          isEmailVerified: true,
+          createdAt: Date.now(),
+        });
 
-      await user.save();
+        await user.save();
+      }
+      console.log("user is:", user);
+
+      done(null, user);
+    } catch (err) {
+      done(err, null);
+      return { status: 500, message: err.message };
     }
-
-    done(null, user);
-  } catch (err) {
-    done(err, null);
-    return { status: 500, message: err.message };
   }
-}
 
-passport.use(new Strategy(AUTH_OPTIONS, verifyCallback));
+  passport.use(new Strategy(AUTH_OPTIONS, verifyCallback));
 
-passport.serializeUser((user, done) => {
-  done(null, user._id);
-});
+  passport.serializeUser((user, done) => {
+    done(null, user._id);
+  });
 
-passport.deserializeUser(async (_id, done) => {
-  try {
-    const user = await OAuthUser.findById({ _id });
-    done(null, user);
-  } catch (err) {
-    done(err, null);
-  }
-});
-
-module.exports = passport;
+  passport.deserializeUser(async (_id, done) => {
+    try {
+      const user = await User.findById({ _id });
+      done(null, user);
+    } catch (err) {
+      done(err, null);
+    }
+  });
+};

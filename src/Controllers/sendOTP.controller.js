@@ -6,62 +6,46 @@ const sendEmail = require("../Utils/email/sendEmail.email");
 require("dotenv").config();
 
 const bcryptSaltRound = parseInt(process.env.BCRYPT_SALT || 10);
-async function sendOTP(req, res, email) {
+async function sendOTP(email) {
   try {
-    // check if there's an existing OTP request and enforce rate limiting
+    // Check for existing OTP
     const existingOTP = await OTP.findOne({ email });
     if (existingOTP) {
-      // if the generated OTP is not yet expired
-      return res.status(400).json({
-        success: false,
-        message: "OTP already sent and still valid, Please check your email.",
-      });
+      return {
+        status: 400,
+        message: "OTP already sent and still valid. Please check your email.",
+      };
     }
 
-    // if OTP has been generated before, generate a new one
-    let isSaved;
-    let otp;
-    do {
-      otp = otpGenerator.generate(6, {
-        upperCaseAlphabets: false,
-        lowerCaseAlphabets: false,
-        specialChars: false,
-      });
-      isSaved = await OTP.findOne({ otp });
-    } while (isSaved);
+    // Generate OTP
+    const otp = otpGenerator.generate(6, {
+      upperCaseAlphabets: false,
+      lowerCaseAlphabets: false,
+      specialChars: false,
+    });
 
-    //hash OTP
-    let otpHash = await bcrypt.hash(otp, bcryptSaltRound);
-
-    // save OTP to DB
+    // Hash OTP and save to DB
+    const otpHash = await bcrypt.hash(otp, bcryptSaltRound);
     const otpEntry = new OTP({
       email,
       otp: otpHash,
       createdAt: Date.now(),
     });
-
     await otpEntry.save();
 
-    //send OTP to user email
-    try {
-      await sendEmail(
-        email,
-        "Login OTP",
-        { otp },
-        "../Utils/email/templates/sendOTP.handlebars"
-      );
-    } catch (emailErr) {
-      // if sending email fails, delete otp from DB
-      await otpEntry.deleteOne();
-      return {
-        success: false,
-        message: "Failed to send OTP email. Please try again.",
-      };
-    }
-    return res.status(200).json({ success: true, message: "OTP sent!", otp });
+    // Send OTP via email
+    await sendEmail(
+      email,
+      "Kharon OTP",
+      { otp },
+      "sendOTP.handlebars"
+    );
+
+    console.log("OTP sent:", otp);
+    return { status: 200, message: "OTP sent successfully" };
   } catch (err) {
-    console.log(err);
-    return { success: false, message: "Failed to send OTP, please try again." };
+    console.error("Error in sendOTP:", err.message);
+    return { status: 500, message: "Failed to send OTP" };
   }
 }
 

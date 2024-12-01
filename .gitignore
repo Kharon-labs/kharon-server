@@ -5,3 +5,6 @@ package-lock
 yarn.lock
 cert.pem
 key.pem
+env_variables.yaml
+.vercel
+.netlify
