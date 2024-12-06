@@ -1,0 +1,8 @@
+runtime: nodejs18
+service: kharon
+env: standard
+handlers:
+- url: /.*
+  script: auto
+includes:
+- env_variables.yaml

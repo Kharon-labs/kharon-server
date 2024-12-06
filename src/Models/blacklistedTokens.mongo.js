@@ -1,6 +1,6 @@
 const mongoose = require("mongoose");
 
-const tokenSchema = new mongoose.Schema({
+const blackListedTokenSchema = new mongoose.Schema({
     userId: {
         type: mongoose.Types.ObjectId,
         required: true,
@@ -13,8 +13,8 @@ const tokenSchema = new mongoose.Schema({
     createdAt: {
         type: Date,
         default: Date.now,
-        expires: 43200, // token expires in 12hrs
+        expires: 43200, // token deletes in 12 hours
     }
 });
 
-module.exports = mongoose.model("Token", tokenSchema);
+module.exports = mongoose.model("blacklistedToken", blackListedTokenSchema);
