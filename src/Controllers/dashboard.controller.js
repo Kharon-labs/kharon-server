@@ -3,9 +3,6 @@ const User = require("../Models/user.mongo");
 
 async function dashboard(req, res) {
   try {
-    console.log('request body:', req.body);
-    console.log('request header:', req.headers);
-    console.log('request user:', req.user);
     const email = req.user?.email || req.body.email;
     
     if(!email) {

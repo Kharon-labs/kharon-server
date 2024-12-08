@@ -107,9 +107,7 @@ schema
   
       // Generate reset token
       let resetToken = crypto.randomBytes(32).toString("hex");
-      console.log("Generated reset token:", resetToken);
       const hash = await bcrypt.hash(resetToken, bcryptSaltRounds);
-      console.log("Generated reset token hash:", hash);
   
       // Save the token
       await new Token({
@@ -120,7 +118,7 @@ schema
       }).save();
   
       const link = `${clientURL}/api/v1/auth/resetPassword?token=${resetToken}&id=${user._id}`;
-      console.log("Password reset link:", link);
+      
       await sendEmail(
         user.email,
         "Password Reset Request",
@@ -141,7 +139,7 @@ schema
   
 
   const resetPassword = async (req, res) => {
-    const { email, password, password2, token, userId } = req.body;
+    const { email, password, password2, token } = req.body;
     console.log("reset pwd token", token);
     if (!validator.validate(email)) {
       return {
@@ -167,8 +165,11 @@ schema
         return { status: 404, message: "User not found" };
       }
 
-  
-      const passwordResetToken = await Token.findOne({ userId: userId });
+      if (!token) {
+        return { status: 404, message: "Token not found" };
+      }
+
+      const passwordResetToken = await Token.findOne({ userId: user._id });
       console.log("token 2", passwordResetToken.token);
       if (!passwordResetToken) {
         return {
@@ -179,7 +180,6 @@ schema
   
       // Validate token and expiration
       const isValid = await bcrypt.compare(token, passwordResetToken.token);
-      console.log("is valid token?", isValid);
       if (!isValid || Date.now() > passwordResetToken.expiresAt) {
         return {
           status: 400,

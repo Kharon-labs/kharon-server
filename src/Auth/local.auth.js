@@ -73,8 +73,6 @@ const loginUser = async (req, res) => {
       return res.status(response.status).json({ message: response.message });
     }
 
-    console.log("User logged in:", user);
-
     // Redirect to verify OTP route
     return res.status(200).json({
       message: "Login successful, please verify OTP",
@@ -88,7 +86,6 @@ const loginUser = async (req, res) => {
 
 const logoutUser = async (req, res) => {
   const { email } = req.body;
-  console.log("log out user: ", email);
   const token = req.header("token") || req.header("Authorization");
   try {
     if (!token) {
