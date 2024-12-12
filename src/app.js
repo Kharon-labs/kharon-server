@@ -13,39 +13,6 @@ let corsOptions = {
   origin: clientUrl,
 };
 
-/*
-app.use((req, res, next) => {
-  res.setHeader("Access-Control-Allow-Origin", clientUrl);
-  res.setHeader(
-    "Access-Control-Allow-Methods",
-    "GET,HEAD,PUT,PATCH,POST,DELETE,OPTIONS,CONNECT,TRACE"
-  );
-  res.setHeader(
-    "Access-Control-Allow-Headers",
-    "Content-Type, Authorization, X-Content-Type-Options, Accept, X-Requested-With, Origin, Access-Control-Request-Method, Access-Control-Request-Headers"
-  );
-  res.setHeader("Access-Control-Allow-Credentials", true);
-  res.setHeader("Access-Control-Allow-Private-Network", true);
-  res.setHeader("Access-Control-Max-Age", 7200);
-
-  next();
-});
-
-app.options("*", (req, res) => {
-  console.log("preflight");
-  if (
-    req.headers.origin === clientUrl &&
-    allowMethods.includes(req.headers["access-control-request-method"]) &&
-    allowHeaders.includes(req.headers["access-control-request-headers"])
-  ) {
-    console.log("pass");
-    return res.status(204).send();
-  } else {
-    console.log("fail");
-  }
-});
-
-*/
 
 app.use(
   cors({
@@ -64,22 +31,6 @@ app.use(
     credentials: true,
   })
 );
-
-/*
-app.use((req, res, next) => {
-  res.setHeader("Access-Control-Allow-Origin", clientUrl);
-  res.setHeader(
-    "Access-Control-Allow-Methods",
-    "GET,HEAD,PUT,PATCH,POST,DELETE,OPTIONS"
-  );
-  res.setHeader(
-    "Access-Control-Allow-Headers",
-    "Content-Type, Authorization, X-Content-Type-Options, Accept, X-Requested-With, Origin"
-  );
-  res.setHeader("Access-Control-Allow-Credentials", true);
-  next();
-});
-*/
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
