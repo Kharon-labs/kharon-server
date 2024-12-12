@@ -13,6 +13,7 @@ let corsOptions = {
   origin: clientUrl,
 };
 
+/*
 app.use((req, res, next) => {
   res.setHeader("Access-Control-Allow-Origin", clientUrl);
   res.setHeader(
@@ -44,7 +45,41 @@ app.options("*", (req, res) => {
   }
 });
 
+*/
+
 // app.use(cors(corsOptions));
+
+app.use(
+  cors({
+    origin: clientUrl,
+    methods: "GET,HEAD,PUT,PATCH,POST,DELETE,OPTIONS",
+    allowedHeaders: [
+      "Content-Type",
+      "Authorization",
+      "X-Content-Type-Options",
+      "Accept",
+      "X-Requested-With",
+      "Origin",
+      "Access-Control-Request-Method",
+      "Access-Control-Request-Headers",
+    ],
+    credentials: true,
+  })
+);
+
+app.use((req, res, next) => {
+  res.setHeader("Access-Control-Allow-Origin", clientUrl);
+  res.setHeader(
+    "Access-Control-Allow-Methods",
+    "GET,HEAD,PUT,PATCH,POST,DELETE,OPTIONS"
+  );
+  res.setHeader(
+    "Access-Control-Allow-Headers",
+    "Content-Type, Authorization, X-Content-Type-Options, Accept, X-Requested-With, Origin"
+  );
+  res.setHeader("Access-Control-Allow-Credentials", true);
+  next();
+});
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
