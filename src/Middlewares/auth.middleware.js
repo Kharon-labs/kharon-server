@@ -9,7 +9,7 @@ const auth = async (req, res, next) => {
   if(req.isAuthenticated()) {
     return next();
   }
-  const token = req.header("token") || req.header("Authorization");
+  const token = req.header("token") || req.header("Authorization")?.replace("Bearer ", "");
 
   if (!token) {
     return res.status(400).json({

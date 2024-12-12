@@ -3,7 +3,7 @@ const User = require("../Models/user.mongo");
 
 async function dashboard(req, res) {
   try {
-    const email = req.user?.email || req.body.email;
+    const email = req.user?.email || req.query.email;
     
     if(!email) {
       return res.status(400).json({ message: "Email is required" });
