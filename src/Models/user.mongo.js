@@ -1,7 +1,8 @@
 const mongoose = require("mongoose");
 const bcrypt = require("bcrypt");
+require('dotenv').config();
 
-const bcryptSalt = process.env.BCRYPT_SALT;
+const bcryptSalt = parseInt(process.env.BCRYPT_SALT) || 10;
 
 const userSchema = mongoose.Schema(
   {
@@ -14,6 +15,18 @@ const userSchema = mongoose.Schema(
     password: {
       type: String,
     },
+    twoFAEnabled: {
+      type: Boolean,
+      default: false,
+    },
+    isEmailVerified: {
+      type: Boolean,
+      default: false,
+    },
+    createdAt: {
+      type: Date, 
+      default: Date.now
+    },
   },
   {
     timestamps: true,
@@ -25,7 +38,7 @@ userSchema.pre("save", async function (next) {
     return next();
   }
 
-  const hash = await bcrypt.hash(this.password, Number(bcryptSalt));
+  const hash = await bcrypt.hash(this.password, bcryptSalt);
   this.password = hash;
   next();
 });

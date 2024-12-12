@@ -1,4 +1,6 @@
 const {
+    loginController,
+    verifyOTPController,
     signUpController,
     resetPasswordRequestController,
     resetPasswordController,
@@ -6,8 +8,10 @@ const {
 
 const router = require("express").Router();
 
-router.post("/auth/signup", signUpController);
-router.post("/auth/resetPassword", resetPasswordController);
-router.post("/auth/requestResetPassword", resetPasswordRequestController);
+// router.post("/auth/login", loginController);
+router.post("/verifyOTP", verifyOTPController);
+router.post("/signup", signUpController);
+router.post("/resetPassword", resetPasswordController);
+router.post("/requestResetPassword", resetPasswordRequestController);
 
 module.exports = router;

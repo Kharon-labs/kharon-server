@@ -1,4 +1,5 @@
 {
+  "type": "commonjs",
   "name": "kharon_server",
   "version": "1.0.0",
   "description": "Server codebase for Kharon protocol",
@@ -15,9 +16,8 @@
   "keywords": [
     "Kharon",
     "Blockchain",
-    "Web3",
-    "server",
     "Ethereum",
+    "server",
     "Starknet"
   ],
   "author": "Chinonso, Evans, Samuel",
@@ -30,20 +30,29 @@
     "testEnvironment": "node"
   },
   "dependencies": {
+    "@types/express": "^5.0.0",
     "bcrypt": "^5.1.1",
+    "connect-mongo": "^5.1.0",
+    "cookie-parser": "^1.4.7",
     "cookie-session": "^2.1.0",
     "cors": "^2.8.5",
     "dotenv": "^16.4.5",
-    "express": "^4.19.2",
+    "email-validator": "^2.0.4",
+    "express": "^4.21.1",
     "express-async-errors": "^3.1.1",
+    "express-session": "^1.18.1",
     "handlebars": "^4.7.8",
     "helmet": "^7.1.0",
+    "http": "^0.0.1-security",
     "jsonwebtoken": "^9.0.2",
     "mongodb": "^6.8.0",
     "mongoose": "^8.5.4",
     "nodemailer": "^6.9.14",
-    "passport": "^0.5.3",
-    "passport-google-oauth20": "^2.0.0"
+    "otp-generator": "^4.0.1",
+    "passport": "^0.7.0",
+    "passport-google-oauth20": "^2.0.0",
+    "passport-local": "^1.0.0",
+    "password-validator": "^5.3.0"
   },
   "devDependencies": {
     "jest": "^29.7.0",
