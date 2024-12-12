@@ -27,6 +27,7 @@ app.use(
       "Origin",
       "Access-Control-Request-Method",
       "Access-Control-Request-Headers",
+      "token",
     ],
     credentials: true,
   })
