@@ -47,8 +47,9 @@ app.options("*", (req, res) => {
 
 */
 
-// app.use(cors(corsOptions));
+app.use(cors(corsOptions));
 
+/*
 app.use(
   cors({
     origin: clientUrl,
@@ -80,6 +81,7 @@ app.use((req, res, next) => {
   res.setHeader("Access-Control-Allow-Credentials", true);
   next();
 });
+*/
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
