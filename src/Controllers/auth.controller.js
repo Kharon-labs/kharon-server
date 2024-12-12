@@ -79,6 +79,12 @@ const verifyOTPController = async (req, res, next) => {
       });
     }
 
+    //delete existing token
+    let storedToken = await Token.findOne({ userId:user._id });
+    if(storedToken) {
+      await storedToken.deleteOne();
+    };
+
     // OTP is valid, generate JWT token
     const token = JWT.sign({ id: user._id }, JWTSecret, { expiresIn: "12h" });
 
@@ -89,6 +95,7 @@ const verifyOTPController = async (req, res, next) => {
       createdAt: Date.now(),
       expiresAt: Date.now() + tokenExpiryTime,
     }).save();
+    console.log("verify otp token: ", token);
 
     //update user
       user.twoFAEnabled = true,
