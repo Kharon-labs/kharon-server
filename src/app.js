@@ -47,9 +47,6 @@ app.options("*", (req, res) => {
 
 */
 
-app.use(cors(corsOptions));
-
-/*
 app.use(
   cors({
     origin: clientUrl,
@@ -68,6 +65,7 @@ app.use(
   })
 );
 
+/*
 app.use((req, res, next) => {
   res.setHeader("Access-Control-Allow-Origin", clientUrl);
   res.setHeader(
