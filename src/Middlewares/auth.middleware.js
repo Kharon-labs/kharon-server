@@ -1,15 +1,18 @@
 require("dotenv").config();
 const JWT = require("jsonwebtoken");
 const JWT_SECRET = process.env.JWT_SECRET;
-const User = require('../Models/user.mongo');
-const Token = require('../Models/token.mongo');
+const User = require("../Models/user.mongo");
+const Token = require("../Models/token.mongo");
 const BlacklistedTokens = require("../Models/blacklistedTokens.mongo");
 
 const auth = async (req, res, next) => {
-  if(req.isAuthenticated()) {
+  if (req.isAuthenticated()) {
+    console.log("middleware: authenticated");
     return next();
   }
-  const token = req.header("token") || req.header("Authorization");
+ 
+  const token =
+    req.header("token") || req.header("Authorization")?.replace("Bearer ", "");
 
   if (!token) {
     return res.status(400).json({
@@ -18,21 +21,21 @@ const auth = async (req, res, next) => {
     });
   }
 
-  const email = req.body.email;
+  const email = req.body.email || req.query.email;
   const user = await User.findOne({ email });
-  
-  if(!user) {
+
+  if (!user) {
     return res.status(400).json({ message: "No user found" });
   }
-  
-  let storedToken = await Token.findOne({ userId:user._id });
-  
-  if(!storedToken) {
+
+  let storedToken = await Token.findOne({ userId: user._id });
+
+  if (!storedToken) {
     return res.status(400).json({ message: "No token found for this user" });
   }
 
-  if(token !== storedToken.token ) {
-    return res.status(400).json({ message: "Tokens do not match"});
+  if (token !== storedToken.token) {
+    return res.status(400).json({ message: "Tokens do not match" });
   }
 
   try {
