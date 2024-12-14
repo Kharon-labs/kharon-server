@@ -86,7 +86,12 @@ const verifyOTPController = async (req, res, next) => {
     };
 
     // OTP is valid, generate JWT token
-    const token = JWT.sign({ id: user._id }, JWTSecret, { expiresIn: "12h" });
+    const payload = {
+      id: user._id,
+      email: user.email
+    }
+
+    const token = JWT.sign(payload, JWTSecret, { expiresIn: "12h" });
 
     // Save token in database with expiration
     await new Token({
@@ -95,7 +100,6 @@ const verifyOTPController = async (req, res, next) => {
       createdAt: Date.now(),
       expiresAt: Date.now() + tokenExpiryTime,
     }).save();
-    console.log("verify otp token: ", token);
 
     //update user
       user.twoFAEnabled = true,

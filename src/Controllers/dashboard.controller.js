@@ -8,8 +8,6 @@ async function dashboard(req, res) {
     if(!email) {
       return res.status(400).json({ message: "Email is required" });
     }
-    console.log('user:', email);
-    
 
     const user = await User.findOne({ email }).select("-password -__v");
     if (!user) {
