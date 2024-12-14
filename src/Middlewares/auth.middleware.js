@@ -21,16 +21,8 @@ const auth = async (req, res, next) => {
     });
   }
 
-  console.log("Received token:", token);
-  console.log(
-    "Email in request body or query:",
-    req.body.email || req.query.email
-  );
-
-
   const email = req.body.email || req.query.email;
   const user = await User.findOne({ email });
-  console.log("Decoded user in auth middleware:", user);
 
   if (!user) {
     return res.status(400).json({ message: "No user found" });
